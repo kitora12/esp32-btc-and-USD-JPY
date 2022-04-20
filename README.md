@@ -1,6 +1,4 @@
-# ESP32-btc-USD-JPY
-forked from joysfera/esp32-btc
-
+# ESP32-BTC
 Simple Demo for an ESP32 module with a TFT LCD or an OLED display.
 
 Forked from https://github.com/joysfera/esp32-btc
