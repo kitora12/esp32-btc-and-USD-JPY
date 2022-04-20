@@ -13,6 +13,7 @@ Forked from https://github.com/joysfera/esp32-btc
 
 3. When acquse the BTC, blink the blue LED on GPIO 02 & invert screen on esp32s GPIO 02.
 4. Scrolled clock and price display to prevent OLED burn-in.
+5. Add USD/JPY price.
 
 Displays current real time and BTC price in USD.
 
