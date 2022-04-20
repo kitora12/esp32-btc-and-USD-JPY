@@ -3,7 +3,7 @@ Simple Demo for an ESP32 module with a TFT LCD or an OLED display.
 
 Forked from https://github.com/joysfera/esp32-btc
 
-![checkbtc](220108BTCget.gif)
+![checkbtc](220421BTCscroll.gif)
 
 
 1. Change from BTC acquisition time to current real time.
