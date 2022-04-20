@@ -1,10 +1,10 @@
 /********************************************
-     ESP32 ADD Realtime Clock(JST)
+     ESP32 BTC and USD/JPY Price  ADD Realtime Clock(JST)
      Prints current time on real time
      Forked from https://github.com/joysfera/esp32-btc
      Forked by kitora12 in '21 JAN 4
-     Rebuild by kitora12 in '22 JAN 8
-     https://github.com/kitora12/esp32-btc
+     Rebuild by kitora12 in '22 APR 21
+     https://github.com/kitora12/esp32-btc-and-USD-JPY/
      released under the GNU GPL
 
      Tested board manager: Arduino core for the ESP32 2.0.2
@@ -39,11 +39,12 @@ Tasker tasker;
 Adafruit_SSD1306 disp(128, 64, &Wire, -1);
 
 
-const char* ssid     = "*********"; // your network SSID (name of wifi network)
-const char* password = "*********"; // your network password
+const char* ssid     = "**************";     // your network SSID (name of wifi network)
+const char* password = "**************"; // your network password
 const char* server = "api.coinbase.com";  // Server URL
 
 int btcvalue = 888888;
+int usdjpyvalue = 888888;
 
 void setup()
 {
@@ -83,11 +84,12 @@ void setup()
 
     displayClock();
     getBTC();
+    getUSDJPY();
 
 }
 
-int posX1 = 129;
-int posX2 = 129;
+int posX1 = 257;
+int posX2 = 257;
 int posTIME =1;
 int posLRSW=1;
 int posTIMESPEEDCOUNT=0;
@@ -137,7 +139,7 @@ posTIMESPEEDCOUNT=0;
 //Price Scroll
     posX1--;
     if(posX1<=0){
-      posX1=129;
+      posX1=257;
       }
     if(posX2<0 && posX2<12){
       posX2--;
@@ -161,11 +163,26 @@ posTIMESPEEDCOUNT=0;
     //disp.setCursor(posX1-128, 1);
     //disp.print(timeClient.getFormattedTime());
     disp.setCursor(posX1-128,20);
-    disp.print("BTC");
+    disp.print("USD/JPY");
     disp.setTextSize(3);
     disp.setCursor(posX1-128,40);
+    //disp.print('Y');
+
+    //1~256 symbol@glcdfont.c
+    disp.write(157);
+    disp.print(usdjpyvalue);    
+
+
+//third disp. No clock.
+
+    disp.setTextSize(2);
+    disp.setCursor(posX1-256,20);
+    disp.print("BTC");
+    disp.setTextSize(3);
+    disp.setCursor(posX1-256,40);
     disp.print('$');
-    disp.print(btcvalue);    
+    disp.print(btcvalue);
+    
     disp.display();
 
     tasker.setTimeout(displayClock, 1);    // next round in 100msec
@@ -185,14 +202,14 @@ while(1){
   client.setHandshakeTimeout(30);
     if (!client.connect(server, 443)) {
         Serial.println("Connection failed!");
-        //btc = -1;
+        btc = -1;
     }
     else {
         Serial.println("Connected to server!");
         // Make a HTTP request:
         client.println("GET https://api.coinbase.com/v2/prices/BTC-USD/spot HTTP/1.0");
         client.println("Host: api.coinbase.com");
-        client.println("Connection: close");
+        //client.println("Connection: close");
         client.println();
         //client.flush();
 
@@ -211,18 +228,82 @@ while(1){
             }
             
         }
+
         delay(10);
         client.stop();
         delay(10);
         Serial.print("Connection Close");
         break;        
     }
-if( ( millis() - time_out ) > 200 ) break;
+if( ( millis() - time_out ) > 400 ) break;
 delay(10);
+
+
 }   
     //return btc;
     btcvalue=btc;
     tasker.setTimeout(getBTC, 120000);    // next round in 120 seconds 
+    digitalWrite(2,LOW);
+    disp.invertDisplay(0); 
+
+}
+
+
+void getUSDJPY(void)
+{
+    digitalWrite(2,HIGH);
+    disp.invertDisplay(1); 
+     
+    int usdjpy=0;
+    Serial.println("\nStarting connection to server...");
+    uint32_t time_out = millis();
+    
+while(1){
+  client.setInsecure();//skip verification
+  client.setHandshakeTimeout(30);
+    if (!client.connect(server, 443)) {
+        Serial.println("Connection failed!");
+        usdjpy = -1;
+    }
+    else {
+        Serial.println("Connected to server!");
+        // Make a HTTP request:
+        client.println("GET https://api.coinbase.com/v2/prices/USD-JPY/spot HTTP/1.0");
+        client.println("Host: api.coinbase.com");
+        //client.println("Connection: close");
+        client.println();
+        //client.flush();
+
+        while (client.connected()) {
+            String line = client.readStringUntil('\n');
+            if (line == "\r") break; // end of HTTP headers
+        }
+        while (client.available()) {
+            String line = client.readStringUntil('\n');
+            int a = line.indexOf("amount");       // naive parsing of the JSON reply
+            if (a > 0) {
+                String amount = line.substring(a + 9);
+                usdjpy = amount.toInt();
+                Serial.print("JPY = Y");
+                Serial.println(usdjpy);
+            }
+            
+        }
+
+        delay(10);
+        client.stop();
+        delay(10);
+        Serial.print("Connection Close");
+        break;        
+    }
+if( ( millis() - time_out ) > 400 ) break;
+delay(10);
+
+
+}   
+    //return usdjpy;
+    usdjpyvalue=usdjpy;
+    tasker.setTimeout(getUSDJPY, 120000);    // next round in 120 seconds 
     digitalWrite(2,LOW);
     disp.invertDisplay(0); 
 
